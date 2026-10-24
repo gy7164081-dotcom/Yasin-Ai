@@ -1,0 +1,347 @@
+<!DOCTYPE html>  <html lang="en" dir="ltr">  
+<head>  
+  <meta charset="UTF-8">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
+  <title>Yasin AI - Mobile AI Studio</title>  
+  <!-- Tailwind CSS CDN -->  
+  <script src="https://cdn.tailwindcss.com"></script>  
+  <!-- Google Fonts for Urdu, Arabic, and English -->  
+  <link rel="preconnect" href="https://fonts.googleapis.com">  
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Noto+Nastaliq+Urdu:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">    <style>  
+    body { font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }  
+    [lang="ar"] { font-family: 'Cairo', sans-serif; }  
+    [lang="ur"] { font-family: 'Noto Nastaliq Urdu', serif; line-height: 2.2; }  
+  </style>  </head>  
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-black">    <!-- Mobile Top Bar -->    <header class="bg-slate-900/90 backdrop-blur sticky top-0 z-50 border-b border-slate-800 px-4 py-3 flex items-center justify-between">  
+    <div class="flex items-center space-x-2 rtl:space-x-reverse">  
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-black text-slate-950 text-lg shadow-md shadow-emerald-500/20">  
+        Y  
+      </div>  
+      <div>  
+        <h1 class="text-lg font-bold tracking-tight text-white leading-tight">Yasin <span class="text-emerald-400">AI</span></h1>  
+        <p class="text-[10px] text-slate-400">Writing & Translation</p>  
+      </div>  
+    </div>  <!-- Language Selector Dropdown -->  
+<div class="flex items-center gap-2">  
+  <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-slate-800 text-slate-200 text-xs font-medium rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-400">  
+    <option value="en">English</option>  
+    <option value="ar">العربية</option>  
+    <option value="ur">اردو</option>  
+  </select>  
+</div>
+
+  </header>    <!-- Main Mobile App Interface -->    <main class="flex-grow p-4 max-w-md mx-auto w-full flex flex-col gap-4">  <!-- Free API Key / Config Bar -->  
+<div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs flex flex-col gap-2">  
+  <div class="flex items-center justify-between text-slate-300">  
+    <span class="font-semibold text-emerald-400 flex items-center gap-1">  
+      <span>⚡</span> <span id="lblGemini">Google AI Studio API Key</span>  
+    </span>  
+    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-emerald-400 underline hover:text-emerald-300">Get Free Key</a>  
+  </div>  
+  <div class="flex gap-2">  
+    <input id="geminiKey" type="password" placeholder="Paste free AI Studio key (or leave empty for Demo Mode)" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500">  
+    <button onclick="toggleKeyVisibility()" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 text-xs">👁️</button>  
+  </div>  
+</div>  
+
+<!-- Tool Tabs -->  
+<div class="grid grid-cols-3 gap-1.5 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 text-xs font-semibold">  
+  <button type="button" onclick="selectTool('social')" id="btn-social" class="tool-btn py-2.5 rounded-xl transition-all bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20">  
+    Social Post  
+  </button>  
+  <button type="button" onclick="selectTool('youtube')" id="btn-youtube" class="tool-btn py-2.5 rounded-xl transition-all text-slate-400 hover:text-white">  
+    YouTube Script  
+  </button>  
+  <button type="button" onclick="selectTool('translate')" id="btn-translate" class="tool-btn py-2.5 rounded-xl transition-all text-slate-400 hover:text-white">  
+    Translate  
+  </button>  
+</div>  
+
+<!-- Translation Target Selector (Visible only when Translate tool is selected) -->  
+<div id="translateTargetBox" class="hidden bg-slate-900 p-3 rounded-xl border border-slate-800 flex items-center justify-between text-xs">  
+  <label id="lblTarget" class="font-medium text-slate-300">Target Language:</label>  
+  <select id="targetLanguage" class="bg-slate-800 text-slate-200 rounded-lg px-3 py-1.5 border border-slate-700 font-semibold focus:outline-none focus:border-emerald-500">  
+    <option value="Urdu">Urdu (اردو)</option>  
+    <option value="Arabic">Arabic (العربية)</option>  
+    <option value="English">English</option>  
+  </select>  
+</div>  
+
+<!-- Input Box -->  
+<div class="space-y-1.5">  
+  <label id="inputLabel" for="userInput" class="block text-xs font-medium text-slate-300">Topic or Text:</label>  
+  <textarea id="userInput" rows="5" class="w-full bg-slate-900 text-slate-100 rounded-2xl p-3.5 border border-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-400 placeholder-slate-600 text-sm resize-none transition" placeholder="e.g. Write a viral Instagram post about AI productivity tips..."></textarea>  
+</div>  
+
+<!-- Error Alert Box -->  
+<div id="errorAlert" class="hidden p-3.5 bg-red-950/80 border border-red-500/50 rounded-xl text-red-200 text-xs flex items-start gap-2.5 leading-relaxed">  
+  <span class="text-base leading-none">⚠️</span>  
+  <div id="errorMessage" class="flex-grow font-medium"></div>  
+</div>  
+
+<!-- Generate Button -->  
+<button id="generateBtn" onclick="handleGenerate()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] transition text-slate-950 font-bold rounded-2xl text-base shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2">  
+  <span id="btnText">Generate</span>  
+  <div id="spinner" class="hidden w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>  
+</button>  
+
+<!-- Response Container -->  
+<div id="responseContainer" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">  
+  <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">  
+    <span id="responseTitle" class="text-xs font-bold text-emerald-400 uppercase tracking-wider">AI Result</span>  
+    <button onclick="copyOutput()" id="copyBtn" class="text-xs font-semibold bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition">Copy</button>  
+  </div>  
+  <div id="responseContent" class="text-sm whitespace-pre-wrap leading-relaxed text-slate-200"></div>  
+</div>
+
+  </main>    <footer class="py-3 text-center text-xs text-slate-600 border-t border-slate-900">  
+    Yasin AI • Free Mobile Prototype  
+  </footer>    <script>  
+    let currentTool = 'social';  
+    let currentLang = 'en';  
+  
+    // UI Dictionaries with Arabic and Urdu RTL strings  
+    const UI_STRINGS = {  
+      en: {  
+        dir: 'ltr',  
+        social: 'Social Post',  
+        youtube: 'YouTube Script',  
+        translate: 'Translate',  
+        inputLabel: 'Topic or Text:',  
+        placeholderSocial: 'e.g. Write a viral Instagram post about AI productivity tips...',  
+        placeholderYT: 'e.g. Create a 60-second YouTube shorts script on morning habits...',  
+        placeholderTrans: 'Enter Urdu, Arabic, or English text to translate...',  
+        generate: 'Generate Response',  
+        generating: 'Generating with Yasin AI...',  
+        lblTarget: 'Translate into:',  
+        output: 'AI Result',  
+        copied: 'Copied!'  
+      },  
+      ar: {  
+        dir: 'rtl',  
+        social: 'منشور تواصل',  
+        youtube: 'نص يوتيوب',  
+        translate: 'ترجمة فورية',  
+        inputLabel: 'الموضوع أو النص المطلوب:',  
+        placeholderSocial: 'مثال: اكتب منشوراً شيقاً لمنصة إنستغرام عن تنظيم الوقت...',  
+        placeholderYT: 'مثال: اكتب سكريبت فيديو قصير (يوتيوب شورتس) عن عادات النجاح...',  
+        placeholderTrans: 'اكتب النص بالعربية أو الإنجليزية أو الأردية لترجمته...',  
+        generate: 'توليد المحتوى',  
+        generating: 'جارٍ الإنشاء بواسطة ياسين...',  
+        lblTarget: 'الترجمة إلى:',  
+        output: 'النتيجة الذكية',  
+        copied: 'تم النسخ!'  
+      },  
+      ur: {  
+        dir: 'rtl',  
+        social: 'سوشل پوسٹ',  
+        youtube: 'یوٹیوب اسکرپٹ',  
+        translate: 'آسان ترجمہ',  
+        inputLabel: 'موضوع یا متن درج کریں:',  
+        placeholderSocial: 'مثال: آن لائن فری لانسنگ کے لیے ایک پرکشش فیس بک پوسٹ لکھیں...',  
+        placeholderYT: 'مثال: یوٹیوب شارٹس کے لیے 60 سیکنڈ کا اسکرپٹ بنائیں...',  
+        placeholderTrans: 'اردو، عربی یا انگریزی متن یہاں درج کریں جس کا ترجمہ کرنا ہے...',  
+        generate: 'بنائیں',  
+        generating: 'یاسین اے آئی تیار کر رہا ہے...',  
+        lblTarget: 'اس زبان میں ترجمہ کریں:',  
+        output: 'تیار شدہ نتیجہ',  
+        copied: 'کاپی ہو گیا!'  
+      }  
+    };  
+  
+    function changeLanguage(lang) {  
+      currentLang = lang;  
+      const t = UI_STRINGS[lang];  
+  
+      document.documentElement.setAttribute('lang', lang);  
+      document.documentElement.setAttribute('dir', t.dir);  
+  
+      document.getElementById('btn-social').innerText = t.social;  
+      document.getElementById('btn-youtube').innerText = t.youtube;  
+      document.getElementById('btn-translate').innerText = t.translate;  
+      document.getElementById('inputLabel').innerText = t.inputLabel;  
+      document.getElementById('lblTarget').innerText = t.lblTarget;  
+      document.getElementById('btnText').innerText = t.generate;  
+      document.getElementById('responseTitle').innerText = t.output;  
+  
+      updatePlaceholder();  
+    }  
+  
+    function selectTool(tool) {  
+      currentTool = tool;  
+      const tools = ['social', 'youtube', 'translate'];  
+      tools.forEach(t => {  
+        const btn = document.getElementById(`btn-${t}`);  
+        if (t === tool) {  
+          btn.className = "tool-btn py-2.5 rounded-xl transition-all bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20";  
+        } else {  
+          btn.className = "tool-btn py-2.5 rounded-xl transition-all text-slate-400 hover:text-white";  
+        }  
+      });  
+  
+      const targetBox = document.getElementById('translateTargetBox');  
+      if (tool === 'translate') {  
+        targetBox.classList.remove('hidden');  
+      } else {  
+        targetBox.classList.add('hidden');  
+      }  
+  
+      updatePlaceholder();  
+    }  
+  
+    function updatePlaceholder() {  
+      const input = document.getElementById('userInput');  
+      const t = UI_STRINGS[currentLang];  
+      if (currentTool === 'social') input.placeholder = t.placeholderSocial;  
+      else if (currentTool === 'youtube') input.placeholder = t.placeholderYT;  
+      else if (currentTool === 'translate') input.placeholder = t.placeholderTrans;  
+    }  
+  
+    function toggleKeyVisibility() {  
+      const input = document.getElementById('geminiKey');  
+      input.type = input.type === 'password' ? 'text' : 'password';  
+    }  
+  
+    function showError(msg) {  
+      const alert = document.getElementById('errorAlert');  
+      const text = document.getElementById('errorMessage');  
+      text.innerText = msg;  
+      alert.classList.remove('hidden');  
+    }  
+  
+    function clearError() {  
+      document.getElementById('errorAlert').classList.add('hidden');  
+    }  
+  
+    async function handleGenerate() {  
+      clearError();  
+      const input = document.getElementById('userInput').value.trim();  
+      const key = document.getElementById('geminiKey').value.trim();  
+      const targetLang = document.getElementById('targetLanguage').value;  
+  
+      if (!input) {  
+        showError(currentLang === 'ur' ? 'براہ کرم پہلے کچھ لکھیں۔' : currentLang === 'ar' ? 'يرجى إدخال الموضوع أو النص أولاً.' : 'Please enter your prompt or text first.');  
+        return;  
+      }  
+  
+      const btn = document.getElementById('generateBtn');  
+      const btnText = document.getElementById('btnText');  
+      const spinner = document.getElementById('spinner');  
+      const responseContainer = document.getElementById('responseContainer');  
+      const responseContent = document.getElementById('responseContent');  
+  
+      // Loading state  
+      btn.disabled = true;  
+      btn.classList.add('opacity-75');  
+      btnText.innerText = UI_STRINGS[currentLang].generating;  
+      spinner.classList.remove('hidden');  
+  
+      try {  
+        if (!key) {  
+          // Offline / Simulator Mode (Guarantees immediate zero-setup preview)  
+          await new Promise(r => setTimeout(r, 900));  
+          responseContent.innerText = getOfflineSimulationResponse(currentTool, input, targetLang, currentLang);  
+        } else {  
+          // Live Google AI Studio (Gemini 1.5 Flash API)  
+          const result = await callGeminiAPI(key, currentTool, input, targetLang, currentLang);  
+          responseContent.innerText = result;  
+        }  
+  
+        responseContainer.classList.remove('hidden');  
+        responseContainer.scrollIntoView({ behavior: 'smooth' });  
+      } catch (err) {  
+        showError(err.message || 'The AI service is unavailable right now. Please check your network or API key.');  
+      } finally {  
+        btn.disabled = false;  
+        btn.classList.remove('opacity-75');  
+        btnText.innerText = UI_STRINGS[currentLang].generate;  
+        spinner.classList.add('hidden');  
+      }  
+    }  
+  
+    // Direct Gemini API Call  
+    async function callGeminiAPI(apiKey, tool, text, targetLang, uiLang) {  
+      const langName = uiLang === 'ur' ? 'Urdu' : uiLang === 'ar' ? 'Arabic' : 'English';  
+        
+      let systemInstruction = '';  
+      if (tool === 'social') {  
+        systemInstruction = `You are Yasin AI, an elite social media creator. Write a high-converting, viral social media post with relevant emojis and hashtags. Respond exclusively in ${langName}.`;  
+      } else if (tool === 'youtube') {  
+        systemInstruction = `You are Yasin AI, an expert YouTube scriptwriter. Create a YouTube script with [Hook], [Introduction], [Key Points], and [Call to Action]. Respond exclusively in ${langName}.`;  
+      } else if (tool === 'translate') {  
+        systemInstruction = `You are Yasin AI, a professional translator. Accurately translate the provided text into ${targetLang}. Return ONLY the translated text without extra conversational commentary.`;  
+      }  
+  
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;  
+  
+      const payload = {  
+        contents: [  
+          {  
+            role: "user",  
+            parts: [  
+              { text: `${systemInstruction}\n\nUser Input: ${text}` }  
+            ]  
+          }  
+        ]  
+      };  
+  
+      const res = await fetch(endpoint, {  
+        method: "POST",  
+        headers: { "Content-Type": "application/json" },  
+        body: JSON.stringify(payload)  
+      });  
+  
+      if (!res.ok) {  
+        if (res.status === 400 || res.status === 403) {  
+          throw new Error('Invalid Google AI Studio Key. Please verify your free key or delete it to test in Demo Mode.');  
+        } else if (res.status === 429) {  
+          throw new Error('Rate limit exceeded. Please wait a moment before generating again.');  
+        } else {  
+          throw new Error(`Google AI Studio error (Status ${res.status}). Service temporarily unavailable.`);  
+        }  
+      }  
+  
+      const data = await res.json();  
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.';  
+    }  
+  
+    // Demo Mode Output Generator  
+    function getOfflineSimulationResponse(tool, prompt, targetLang, lang) {  
+      if (tool === 'translate') {  
+        if (targetLang === 'Urdu') {  
+          return `[ڈیمو ترجمہ - یاسین اے آئی]:\n\nیہ آپ کے متن کا اردو ترجمہ ہے: "${prompt}"\n(مکمل براہ راست اے آئی کے لیے اوپر اپنی مفت گوگل اے آئی اسٹوڈیو کی درج کریں)۔`;  
+        } else if (targetLang === 'Arabic') {  
+          return `[ترجمة تجريبية - ياسين الذكي]:\n\nهذه ترجمة نصك إلى العربية: "${prompt}"\n(للحصول على ترجمة مباشرة كاملة، يرجى إدخال مفتاح Google AI Studio المجاني بالأعلى).`;  
+        } else {  
+          return `[Demo Translation - Yasin AI]:\n\nThis is the English translation for your input: "${prompt}"\n(For live generative responses, paste your free Google AI Studio key above).`;  
+        }  
+      } else if (tool === 'youtube') {  
+        if (lang === 'ur') {  
+          return `🎬 یوٹیوب اسکرپٹ (یاسین اے آئی):\n\n[ہک]: کیا آپ جانتے ہیں کہ "${prompt}" آپ کی زندگی بدل سکتا ہے؟\n\n[تعارف]: السلام علیکم دوستو! آج ہم جانیں گے کہ کس طرح آپ اس میں مہارت حاصل کر سکتے ہیں۔\n\n[اہم نکات]:\n1. بنیادی اصولوں کو سمجھیں۔\n2. مستقل مزاجی اپنائیں۔\n\n[اختتام]: مزید مفید ویڈیوز کے لیے چینل کو سبسکرائب کریں!`;  
+        } else if (lang === 'ar') {  
+          return `🎬 سكريبت يوتيوب (ياسين AI):\n\n[المقدمة المشوقة]: هل تعلم أن السر في "${prompt}" يبدأ بخطوة واحدة؟\n\n[المقدمة]: مرحباً بكم جميعاً! في هذا الفيديو سنكتشف 3 أسرار لتطبيق ذلك عملياً.\n\n[النقاط الأساسية]:\n1. التخطيط الذكي.\n2. الاستمرارية دون توقف.\n\n[الدعوة للاشتراك]: اضغط زر الإعجاب واشترك في القناة للمزيد!`;  
+        } else {  
+          return `🎬 YouTube Script (Yasin AI):\n\n[HOOK]: Did you know this one insight about "${prompt}" can change everything?\n\n[INTRO]: Welcome back! Today we're breaking down exactly what you need to know.\n\n[CORE CONTENT]:\n1. Define your goal clearly.\n2. Execute consistently every day.\n\n[CTA]: Hit like and subscribe for more weekly tips!`;  
+        }  
+      } else {  
+        if (lang === 'ur') {  
+          return `✨ سوشل میڈیا پوسٹ (یاسین اے آئی):\n\nکیا آپ "${prompt}" پر کام کر رہے ہیں؟ 🚀\n\nکامیابی کی کلید صرف محنت نہیں بلکہ مستقل مزاجی ہے۔\n\nکیا آپ متفق ہیں؟ نیچے کمنٹ میں اپنی رائے دیں! 👇\n\n#یاسین_اے_آئی #کامیابی #موٹیویشن`;  
+        } else if (lang === 'ar') {  
+          return `✨ منشور تواصل اجتماعي (ياسين AI):\n\nهل تفكر في "${prompt}" مؤخراً؟ 🚀\n\nالسر لا يكمن فقط في البداية، بل في الالتزام اليومي وصنع الفارق!\n\nشاركنا رأيك في التعليقات! 👇\n\n#ياسين_AI #تطوير_الذات #إنتاجية`;  
+        } else {  
+          return `✨ Social Media Post (Yasin AI):\n\nLevel up your thoughts on "${prompt}"! 🚀\n\nConsistency beats talent when talent isn't consistent. Make today count.\n\nDrop your thoughts in the comments below! 👇\n\n#YasinAI #Productivity #GrowthMindset`;  
+        }  
+      }  
+    }  
+  
+    function copyOutput() {  
+      const text = document.getElementById('responseContent').innerText;  
+      if (!text) return;  
+      navigator.clipboard.writeText(text);  
+      const copyBtn = document.getElementById('copyBtn');  
+      copyBtn.innerText = UI_STRINGS[currentLang].copied;  
+      setTimeout(() => copyBtn.innerText = 'Copy', 2000);  
+    }  
+  </script>  </body>  
+</html>  
